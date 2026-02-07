@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmark Manager</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Bookmark Manager</h1>
+
+    <div class="input-container">
+      <input type="text" id="bookmark-url" placeholder="Enter bookmark URL" />
+      <input type="text" id="bookmark-category" placeholder="Enter category" />
+      <button id="add-bookmark-btn">Add Bookmark</button>
+    </div>
+
+    <ul id="bookmark-list"></ul>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:3001/bookmarks";
+    const bookmarklist = document.getElementById("bookmark-list");
+    const input_u = document.getElementById("bookmark-url");
+    const input_cat = document.getElementById("bookmark-category");
+
+    async function renderbookmark(bookmark) {
+      const li = document.createElement("li")
+      li.dataset.id = bookmark._id.toString();
+      const span = document.createElement("span");
+      span.textContent = `URL:${bookmark.url} | Category:${bookmark.category}`
+
+      const btn = document.createElement("button");
+      btn.textContent = "Delete"
+
+      btn.addEventListener("click",async()=>{
+        await axios.delete(`${API_URL}/${bookmark._id}`);
+        li.remove()
+      })
+
+      li.append(span,btn);
+      bookmarklist.appendChild(li);
+    }
+    async function addBookmarks(){
+      const url = input_u.value.trim()
+      const category = input_cat.value.trim()
+      const response = await axios.post(API_URL,{
+        url: url,
+        category: category
+      })
+      renderbookmark(response.data);
+      input_u.value = ""
+      input_cat.value = ""
+    }
+
+    async function getAlltodos(){
+      const response = await axios.get(API_URL)
+      bookmarklist.innerHTML = ""
+      response.data.forEach((u)=>{
+        renderbookmark(u);
+      })
+    }
+  document.getElementById("add-bookmark-btn").addEventListener("click", addBookmarks);
+    getAlltodos()
+  </script>
+</body>
+</html>
